@@ -1,5 +1,6 @@
 # Klok Automate
 
+Kalo belum daftar bisa pake reff sy, https://klokapp.ai?referral_code=Y5ZB8DGS
 
 1. Edit isi array ama pesan atau prompt yang mau dipake, kalo males paste aja chatgpt suru isi pake pesan 10 biji untuk koteksnya bebas aja.
 2. Nanti paste aja di console browse, shortcutnya CTRL + SHIFT + J
