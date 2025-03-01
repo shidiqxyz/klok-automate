@@ -10,7 +10,6 @@ Kalo belum daftar bisa pake reff sy, https://klokapp.ai?referral_code=Y5ZB8DGS
 (async function() {
   // 1. Array pesan dengan 10 prompt singkat tentang blockchain
   const messages = [
-    [
   "What is your favorite childhood memory?",
   "If you could have any superpower, what would it be and why?",
   "What is the most interesting book you've ever read?",
@@ -60,7 +59,6 @@ Kalo belum daftar bisa pake reff sy, https://klokapp.ai?referral_code=Y5ZB8DGS
   "Would you rather explore space or the deep ocean?",
   "What is one random fun fact about yourself?",
   "If you had to describe yourself in three words, what would they be?"
-];
   ];
 
   // Fungsi untuk merandom array menggunakan algoritma Fisher-Yates
