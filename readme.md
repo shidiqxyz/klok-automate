@@ -9,30 +9,22 @@ Kalo belum daftar bisa pake reff sy, https://klokapp.ai?referral_code=Y5ZB8DGS
 
 ```javascipt
 (async function() {
-  // Array definisi untuk konteks, prompt, objek, dan kata kunci
   const S = ["blockchain", "kripto", "fintech"];
   const P = ["Jelaskan", "Deskripsikan", "Analisis"];
   const O = ["peran", "konsep", "manfaat"];
   const K = ["disrupsi", "inovasi", "transformasi"];
 
-  // Fungsi untuk menghasilkan prompt secara acak
   function generateRandomPrompt() {
     const s = S[Math.floor(Math.random() * S.length)];
     const p = P[Math.floor(Math.random() * P.length)];
     const o = O[Math.floor(Math.random() * O.length)];
     const k = K[Math.floor(Math.random() * K.length)];
-  
     return `${p} ${o} ${k} dalam konteks ${s}.`;
   }
 
-  // Array messages yang diisi dengan 10 prompt acak
-  const messages = [];
-  for (let i = 0; i < 10; i++) {
-    messages.push(generateRandomPrompt());
-  }
+  const messages = Array.from({length: 10}, generateRandomPrompt);
   console.log("Pesan yang dihasilkan:", messages);
 
-  // Fungsi untuk merandom array menggunakan algoritma Fisher-Yates
   function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -40,106 +32,97 @@ Kalo belum daftar bisa pake reff sy, https://klokapp.ai?referral_code=Y5ZB8DGS
     }
     return array;
   }
-
-  // Acak pesan tanpa mengubah array asli
   const randomizedMessages = shuffleArray([...messages]);
 
-  // Fungsi utilitas untuk menunggu hingga sebuah elemen tersedia
   function waitForElement(selector, interval = 500, timeout = 10000) {
     return new Promise((resolve, reject) => {
       const start = Date.now();
-      const check = () => {
+      (function check() {
         const el = document.querySelector(selector);
-        if (el) {
-          resolve(el);
-        } else if (Date.now() - start >= timeout) {
-          reject(new Error(`Elemen dengan selector "${selector}" tidak ditemukan dalam waktu ${timeout}ms`));
-        } else {
-          setTimeout(check, interval);
-        }
-      };
-      check();
+        if (el) return resolve(el);
+        if (Date.now() - start >= timeout) return reject(new Error(`Element ${selector} not found`));
+        setTimeout(check, interval);
+      })();
     });
   }
 
-  // Seleksi elemen-elemen DOM
   const getChatCountElement = () =>
     document.querySelector('div[class*="text-[#e8e8e8]"][class*="text-[13px]"]');
   const getTextarea = () => document.querySelector('textarea[name="message"]');
   const getSubmitButton = () => document.querySelector('button[type="submit"]');
 
-  // Fungsi untuk menunggu hingga tombol submit aktif (tidak disabled)
   async function waitForButtonToEnable() {
     await waitForElement('button[type="submit"]');
-    const submitButton = getSubmitButton();
-    while (submitButton.disabled) {
-      console.log("Tombol submit masih disabled, mensimulasikan klik pada textarea untuk mengaktifkannya...");
-      const textarea = getTextarea();
-      if (textarea) {
-        textarea.click();
-        textarea.focus();
-        textarea.dispatchEvent(new Event("focus", { bubbles: true }));
-        textarea.dispatchEvent(new Event("input", { bubbles: true }));
-      }
-      await new Promise(resolve => setTimeout(resolve, 500));
+    const btn = getSubmitButton();
+    while (btn.disabled) {
+      const ta = getTextarea();
+      if (ta) ta.dispatchEvent(new Event("input", { bubbles: true }));
+      await new Promise(r => setTimeout(r, 300));
     }
   }
 
-  // Fungsi untuk mengirim pesan berdasarkan indeks dari array yang sudah diacak
+  // Fungsi mengetik per karakter dengan delay acak
+  async function typeText(element, text) {
+    element.value = "";
+    for (let char of text) {
+      element.value += char;
+      element.dispatchEvent(new Event("input", { bubbles: true }));
+      // delay acak antara 50–200ms per karakter
+      await new Promise(r => setTimeout(r, 50 + Math.random() * 150));
+    }
+  }
+
   async function sendChat(index) {
     if (index >= randomizedMessages.length) return;
+    const prompt = randomizedMessages[index];
 
-    // Pastikan textarea dan tombol submit sudah tersedia
-    let textarea = getTextarea();
-    while (!textarea) {
-      console.log("Textarea tidak ditemukan, menunggu...");
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      textarea = getTextarea();
+    // tunggu elemen tersedia
+    let ta = getTextarea();
+    while (!ta) {
+      await new Promise(r => setTimeout(r, 500));
+      ta = getTextarea();
     }
-
-    let submitButton = getSubmitButton();
-    while (!submitButton) {
-      console.log("Tombol submit tidak ditemukan, menunggu...");
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      submitButton = getSubmitButton();
+    let btn = getSubmitButton();
+    while (!btn) {
+      await new Promise(r => setTimeout(r, 500));
+      btn = getSubmitButton();
     }
-
-    // Tunggu hingga tombol submit aktif
     await waitForButtonToEnable();
 
-    // Kirim pesan
-    textarea.removeAttribute("disabled");
-    textarea.value = randomizedMessages[index];
-    textarea.dispatchEvent(new Event("input", { bubbles: true }));
-    submitButton.click();
+    // delay acak sebelum mulai mengetik (1–10 detik)
+    await new Promise(r => setTimeout(r, 1000 + Math.random() * 10000));
+
+    // simulasi mengetik
+    ta.removeAttribute("disabled");
+    await typeText(ta, prompt);
+
+    // jeda singkat sebelum klik submit
+    await new Promise(r => setTimeout(r, 200 + Math.random() * 300));
+    btn.click();
   }
 
-  // MutationObserver untuk memantau perubahan jumlah chat
   const observer = new MutationObserver(() => {
-    const chatCountDiv = getChatCountElement();
-    if (!chatCountDiv) return;
-
-    const currentCount = parseInt(chatCountDiv.textContent) || 0;
-    console.log(`Jumlah chat saat ini: ${currentCount}`);
-
+    const countEl = getChatCountElement();
+    if (!countEl) return;
+    const currentCount = parseInt(countEl.textContent) || 0;
     if (currentCount < randomizedMessages.length) {
       sendChat(currentCount);
     } else {
       observer.disconnect();
-      console.log("Proses automasi chat selesai (semua pesan terkirim).");
+      console.log("Semua pesan terkirim.");
     }
   });
 
-  // Fungsi untuk memulai observasi setelah elemen chat count tersedia
   async function startObserving() {
     await waitForElement('div[class*="text-[#e8e8e8]"][class*="text-[13px]"]');
-    const chatCountDiv = getChatCountElement();
-    observer.observe(chatCountDiv, { childList: true, characterData: true, subtree: true });
+    const countEl = getChatCountElement();
+    observer.observe(countEl, { childList: true, characterData: true, subtree: true });
     sendChat(0);
   }
 
   startObserving();
 })();
+
 ```
 ## Versi Boorkmark
 
